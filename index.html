@@ -221,18 +221,66 @@
     font-size: 0.9rem;
     border-top: 1px solid #444;
     text-align: center;
+
+    #sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#sidebar .filters {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-bottom: 1rem;
+}
+
+#bookCountBar {
+    padding: 0.6rem;
+    background: #1a1a1a;
+    border-top: 2px solid #444;
+    text-align: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+}
+#sidebarContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 300px;
+    background: #2b2b2b;
+    border-right: 2px solid #444;
+    flex-shrink: 0;
+}
+
+#sidebar {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+#bookCountBar {
+    padding: 0.6rem 1rem;
+    border-top: 2px solid #444;
+    background-color: #252525;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #ddd;
 }
 
     </style>
 </head>
 <body>
     <div id="container">
+        <div id="sidebarContainer">
 
         <div id="sidebar">
             <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
                 <button onclick="location.href='ueber.html'" class="nav-button">ℹ️ Über</button>
                 <button onclick="location.href='impressum.html'" class="nav-button">📄 Impressum</button>
             </div>
+            <div class="filters">
             <div class="filter">
                 <button id="resetFilters">🔄 Alle Filter zurücksetzen</button>
             </div>
@@ -271,8 +319,14 @@
                 <h4>🏢 Verlage: <button class="reset-btn" data-filter="publisher">🔄</button></h4>
                 <div id="publisherFilter" class="filter-scrollbox"></div>
             </div>
+            </div>
 
-            <div id="bookCount">0 von 0 eBooks</div>
+        </div>
+
+        <div id="bookCountBar">
+          <span id="bookCountIcon">📖</span>
+          <span id="bookCountText">0 von 0 eBooks</span>
+        </div>
         </div>
 
         <div id="main">
@@ -282,12 +336,12 @@
         <div id="detailPanel">
             <img id="detailCover" src="" alt="">
             <h2 id="detailTitle"></h2>
-            <p><strong>Autor(en):</strong> <span id="detailAuthor" class="filter-click" data-filter="authors"></span></p>
+            <p><strong>Autor(en):</strong> <span id="detailAuthor"></span></p>
             <p><strong>Verlag:</strong> <span id="detailPublisher" class="filter-click" data-filter="publisher"></span></p>
             <p><strong>Tags:</strong> <span id="detailTags"></span></p>
             <p><strong>Serie:</strong> <span id="detailSeries" class="filter-click" data-filter="series"></span></p>
             <p><strong>Format:</strong> <span id="detailFormats" class="filter-click" data-filter="formats"></span></p>
-            <p><strong>Sprache:</strong> <span id="detailLang" class="filter-click" data-filter="languages"></span></p>
+            <p><strong>Sprache:</strong> <span id="detailLang"></span></p>
             <button id="loanButton">Ich möchte dieses eBook ausleihen</button>
         </div>
     </div>
@@ -345,28 +399,64 @@
         function updateBookCount(filtered) {
     const total = books.length;
     const shown = filtered.length;
-    document.getElementById("bookCount").textContent = `${shown} von ${total} eBooks`;
+    document.getElementById("bookCountText").textContent = `${filtered.length} von ${books.length} eBooks`;
+
 }
 
 
         function buildFilters(data) {
-            const fields = {
-                authors: "authorsFilter",
-                tags: "tagsFilter",
-                languages: "languagesFilter",
-                series: "seriesFilter",
-                formats: "formatsFilter",
-                publisher: "publisherFilter"
-            };
+    const fields = {
+        authors: "authorsFilter",
+        tags: "tagsFilter",
+        languages: "languagesFilter",
+        series: "seriesFilter",
+        formats: "formatsFilter",
+        publisher: "publisherFilter"
+    };
 
-            for (let key in fields) {
-                const div = document.getElementById(fields[key]);
-                const values = [...new Set(data.map(b => (b[key] || "").split(",")).flat().map(s => s.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
-                div.innerHTML = values.map(val => `
-              <label><input type="checkbox" data-cat="${key}" value="${val}"> ${val}</label><br>
-            `).join("");
-            }
+    for (let key in fields) {
+        const div = document.getElementById(fields[key]);
+        let values = [];
+
+        if (key === "authors") {
+            // Alle Autoren aus allen Büchern extrahieren und splitten
+            // Dabei & als Trennzeichen benutzen
+            let authorsSet = new Set();
+            let authorToSortMap = new Map();
+
+            data.forEach(book => {
+                // Autoren aus Buch extrahieren, aufsplitten, trimmen
+                let authors = (book.authors || "").split(/\s*&\s*/).map(a => a.trim());
+                authors.forEach(author => {
+                    authorsSet.add(author);
+
+                    // Falls dieser Autor noch keinen author_sort Wert hat, setzen wir ihn
+                    if (!authorToSortMap.has(author)) {
+                        authorToSortMap.set(author, book.author_sort || "");
+                    }
+                });
+            });
+
+            values = [...authorsSet];
+
+            // Sortieren nach author_sort
+            values.sort((a, b) => {
+                let aSort = authorToSortMap.get(a) || "";
+                let bSort = authorToSortMap.get(b) || "";
+                return aSort.localeCompare(bSort, "de");
+            });
+
+        } else {
+            // Standard: kommaseparierte Strings aufsplitten, trimmen, filtern, sortieren
+            values = [...new Set(data.map(b => (b[key] || "").split(",")).flat().map(s => s.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
         }
+
+        div.innerHTML = values.map(val => `
+          <label><input type="checkbox" data-cat="${key}" value="${val}"> ${val}</label><br>
+        `).join("");
+    }
+}
+
 
         document.getElementById("search").addEventListener("input", applyFilters);
 
@@ -390,7 +480,7 @@
 
                 for (let cat in activeFilters) {
                     if (activeFilters[cat].size > 0) {
-                        const bookVal = (b[cat] || "").split(",").map(s => s.trim());
+                        const bookVal = (b[cat] || "").split(cat === "authors" ? /\s*&\s*/ : ",").map(s => s.trim());
                         if (![...activeFilters[cat]].every(f => bookVal.includes(f))) return false;
                     }
                 }
@@ -405,25 +495,43 @@
             currentBook = book;
             document.getElementById("detailCover").src = book.cover;
             document.getElementById("detailTitle").textContent = book.title;
-            document.getElementById("detailAuthor").textContent = book.authors;
+            document.getElementById("detailAuthor").innerHTML = (book.authors || "")
+  .split(/\s*&\s*/)
+  .map(author => `<span class="filter-click" data-filter="authors">${author.trim()}</span>`)
+  .join(", ");
+
             document.getElementById("detailPublisher").textContent = book.publisher;
             document.getElementById("detailTags").innerHTML = (book.tags || "").split(",").map(tag =>
                 `<span class="filter-click" data-filter="tags">${tag.trim()}</span>`).join(", ");
             document.getElementById("detailSeries").textContent = book.series || "";
             document.getElementById("detailFormats").textContent = book.formats || "";
-            document.getElementById("detailLang").textContent = book.languages || "";
+            document.getElementById("detailLang").innerHTML = (book.languages || "")
+  .split(",")
+  .map(lang => `<span class="filter-click" data-filter="languages">${lang.trim()}</span>`)
+  .join(", ");
+
         }
 
         document.getElementById("detailPanel").addEventListener("click", e => {
-            if (e.target.classList.contains("filter-click")) {
-                const cat = e.target.dataset.filter;
-                const val = e.target.textContent.trim();
-                activeFilters[cat].add(val);
-                const cb = [...document.querySelectorAll(`#sidebar input[data-cat="${cat}"]`)].find(c => c.value === val);
-                if (cb) cb.checked = true;
-                applyFilters();
-            }
-        });
+    if (e.target.classList.contains("filter-click")) {
+        const cat = e.target.dataset.filter;
+        const val = e.target.textContent.trim();
+
+        // Alle Filter zurücksetzen
+        for (let key in activeFilters) {
+            activeFilters[key].clear();
+            document.querySelectorAll(`#sidebar input[data-cat="${key}"]`).forEach(cb => cb.checked = false);
+        }
+
+        // Nur den neuen Filter setzen
+        activeFilters[cat].add(val);
+        const cb = [...document.querySelectorAll(`#sidebar input[data-cat="${cat}"]`)].find(c => c.value === val);
+        if (cb) cb.checked = true;
+
+        applyFilters();
+    }
+});
+
 
         document.querySelectorAll(".reset-btn").forEach(btn => {
             btn.addEventListener("click", () => {
