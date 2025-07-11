@@ -213,6 +213,16 @@
             #loanButton:hover {
                 background: #0e81c2;
             }
+        #bookCount {
+    position: sticky;
+    bottom: 0;
+    background: #2b2b2b;
+    padding-top: 1rem;
+    font-size: 0.9rem;
+    border-top: 1px solid #444;
+    text-align: center;
+}
+
     </style>
 </head>
 <body>
@@ -261,6 +271,8 @@
                 <h4>🏢 Verlage: <button class="reset-btn" data-filter="publisher">🔄</button></h4>
                 <div id="publisherFilter" class="filter-scrollbox"></div>
             </div>
+
+            <div id="bookCount">0 von 0 eBooks</div>
         </div>
 
         <div id="main">
@@ -312,7 +324,7 @@
                 );
                 renderBooks(books);
                 buildFilters(books);
-                if (books.length > 0) showDetails(books[0]);
+                updateBookCount(books); // initialer Zähler
             });
 
         function renderBooks(data) {
@@ -329,6 +341,13 @@
                 grid.appendChild(div);
             });
         }
+
+        function updateBookCount(filtered) {
+    const total = books.length;
+    const shown = filtered.length;
+    document.getElementById("bookCount").textContent = `${shown} von ${total} eBooks`;
+}
+
 
         function buildFilters(data) {
             const fields = {
@@ -379,6 +398,7 @@
             });
 
             renderBooks(filtered);
+            updateBookCount(filtered);
         }
 
         function showDetails(book) {
