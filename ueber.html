@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Über | SeverinBooks</title>
+  <link rel="icon" href="images/icons8-book-96.png" type="image/png">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #1e1e1e;
+      color: white;
+    }
+    header {
+      background-color: #2b2b2b;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    header a {
+      background-color: #444;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+    header a:hover {
+      background-color: #666;
+      cursor: pointer;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .section:nth-child(even) {
+      background-color: #2e2e2e;
+    }
+
+    .section:nth-child(odd) {
+      background-color: #3a3a3a;
+    }
+
+    .section img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .section .text {
+      flex: 1;
+    }
+
+    .section .image {
+      flex: 1;
+    }
+
+    .section .text h2 {
+      margin-top: 0;
+    }
+    
+    .footer {
+  background-color: #2b2b2b;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+.footer a {
+  color: lightblue;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+    
+    
+    @media screen and (max-width: 768px) {
+      .section {
+        flex-direction: column;
+        text-align: left;
+      }
+
+      .section .image,
+      .section .text {
+        width: 100%;
+      }
+    }
+    
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Über</h1>
+    <a href="index.html">Zurück</a>
+  </header>
+
+  <!-- Abschnitt 1: Bild links, Text rechts -->
+  <div class="section">
+    <div class="image">
+      <img src="images/tablet-1632909_1920.jpg" alt="Tablet mit Buch">
+    </div>
+    <div class="text">
+      <h2>Zielsetzung</h2>
+      <p>Über diese Webseite teile ich meine eBooks mit Personen, die mir eng verbunden sind, wie Verwandte oder Freunde.</p>
+      <p>Aus diesem Grund enthält diese Webseite nur eine Übersicht meiner eBooks. Die eBooks an sich befinden sich nicht auf dieser Webseite.</p>
+      <p>Wenn du zu den mir eng verbundenen Personen gehörst, dann kannst du gerne durch die Übersicht stöbern und mir per E-Mail Autor und Titel der eBooks senden, die du ausleihen möchtest. Ich werde dir diese eBooks dann zusenden.</p>
+    </div>
+  </div>
+
+  <!-- Abschnitt 2: Text links, Bild rechts -->
+  <div class="section">
+    <div class="text">
+      <h2>Rechtliches</h2>
+      <p><strong>231.1 Bundesgesetz über das Urheberrecht und verwandte Schutzrechte (URG)</strong><br>
+        5. Kapitel: Schranken des Urheberrechts<br>
+        <strong>Art. 19 Verwendung zum Eigengebrauch</strong><br>
+        1 Veröffentlichte Werke dürfen zum Eigengebrauch verwendet werden. Als Eigengebrauch gilt:
+        <ul>
+          <li>a. jede Werkverwendung im persönlichen Bereich und im Kreis von Personen, die unter sich eng verbunden sind, wie Verwandte oder Freunde;</li>
+          <li>b. jede Werkverwendung der Lehrperson für den Unterricht in der Klasse;</li>
+          <li>c. das Vervielfältigen von Werkexemplaren in Betrieben, öffentlichen Verwaltungen, Instituten, Kommissionen und ähnlichen Einrichtungen für die interne Information oder Dokumentation.</li>
+        </ul>
+        Quelle: <a href="https://www.fedlex.admin.ch/eli/cc/1993/1798_1798_1798/de" target="_blank" style="color:lightblue;">fedlex.admin.ch</a>
+      </p>
+         </div>
+    <div class="image">
+      <img src="images/andreas-fischinger-htzhlfuhsac-unsplash-1.webp" alt="Bundeshaus">
+    </div>
+  </div>
+
+  <!-- Footer: Icon-Credit -->
+  <div class="footer">
+    <p><a href="https://icons8.com/icon/43131/book" target="_blank">Book</a> icon by <a href="https://icons8.com" target="_blank">Icons8</a></p>
+  </div>
+</body>
+</html>

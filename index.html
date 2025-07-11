@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>SeverinBooks</title>
+    <link rel="icon" href="images/icons8-book-96.png" type="image/png">
+    <style>
+        /* Global Styles */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: 300px;
+            background: #2b2b2b;
+            padding: 1rem;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            border-right: 2px solid #444;
+        }
+
+        .nav-button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 1;
+            transition: background-color 0.2s;
+        }
+
+            .nav-button:hover {
+                background-color: #666;
+            }
+
+        #main {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        #detailPanel {
+            width: 300px;
+            background: #333;
+            padding: 1rem;
+            overflow-y: auto;
+            height: 100vh;
+            flex-shrink: 0;
+            border-left: 2px solid #444;
+        }
+
+        .cover-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+        }
+
+        .cover-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .cover-item img:hover {
+                transform: scale(1.05);
+            }
+
+        #detailCover {
+            width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        h4 {
+            margin: 1rem 0 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reset-btn {
+            background: transparent;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0;
+        }
+
+            .reset-btn:hover {
+                color: #fff;
+                transform: scale(1.1);
+            }
+
+        .filter {
+            margin-bottom: 1rem;
+        }
+
+        .filter-scrollbox {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #1f1f1f;
+            padding: 0.3rem 0.5rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+
+        .filter-click {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+            .filter-click:hover {
+                color: #1ea1f2;
+            }
+
+        #resetFilters {
+            width: 100%;
+            padding: 0.4rem;
+            background: #444;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+            #resetFilters:hover {
+                background: #555;
+            }
+
+        #loanFormPopup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #222;
+            padding: 1rem;
+            border: 2px solid #888;
+            border-radius: 6px;
+            display: none;
+            z-index: 1000;
+            width: 300px;
+        }
+
+            #loanFormPopup input, #loanFormPopup textarea {
+                width: 100%;
+                margin: 0.3rem 0;
+                padding: 0.4rem;
+                border-radius: 4px;
+                border: 1px solid #666;
+                background: #333;
+                color: white;
+            }
+
+            #loanFormPopup button {
+                margin-top: 0.5rem;
+                width: 100%;
+                padding: 0.5rem;
+                background: #1ea1f2;
+                border: none;
+                color: white;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+                #loanFormPopup button:hover {
+                    background: #0e81c2;
+                }
+
+        #loanFormPopupClose {
+            text-align: right;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+
+        #loanButton {
+            margin-top: 1rem;
+            background: #1ea1f2;
+            border: none;
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+
+            #loanButton:hover {
+                background: #0e81c2;
+            }
+    </style>
+</head>
+<body>
+    <div id="container">
+
+        <div id="sidebar">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <button onclick="location.href='ueber.html'" class="nav-button">ℹ️ Über</button>
+                <button onclick="location.href='impressum.html'" class="nav-button">📄 Impressum</button>
+            </div>
+            <div class="filter">
+                <button id="resetFilters">🔄 Alle Filter zurücksetzen</button>
+            </div>
+
+            <div class="filter">
+                <h4>🔍 Suche: <button class="reset-btn" data-filter="search">🔄</button></h4>
+                <input type="text" id="search" style="width: 100%;">
+            </div>
+
+            <div class="filter">
+                <h4>👤 Autoren: <button class="reset-btn" data-filter="authors">🔄</button></h4>
+                <div id="authorsFilter" class="filter-scrollbox"></div>
+            </div>
+
+            <div class="filter">
+                <h4>🏷️ Tags: <button class="reset-btn" data-filter="tags">🔄</button></h4>
+                <div id="tagsFilter" class="filter-scrollbox"></div>
+            </div>
+
+            <div class="filter">
+                <h4>🗣️ Sprachen: <button class="reset-btn" data-filter="languages">🔄</button></h4>
+                <div id="languagesFilter" class="filter-scrollbox"></div>
+            </div>
+
+            <div class="filter">
+                <h4>📚 Serien: <button class="reset-btn" data-filter="series">🔄</button></h4>
+                <div id="seriesFilter" class="filter-scrollbox"></div>
+            </div>
+
+            <div class="filter">
+                <h4>💾 Formate: <button class="reset-btn" data-filter="formats">🔄</button></h4>
+                <div id="formatsFilter" class="filter-scrollbox"></div>
+            </div>
+
+            <div class="filter">
+                <h4>🏢 Verlage: <button class="reset-btn" data-filter="publisher">🔄</button></h4>
+                <div id="publisherFilter" class="filter-scrollbox"></div>
+            </div>
+        </div>
+
+        <div id="main">
+            <div class="cover-grid" id="coverGrid"></div>
+        </div>
+
+        <div id="detailPanel">
+            <img id="detailCover" src="" alt="">
+            <h2 id="detailTitle"></h2>
+            <p><strong>Autor(en):</strong> <span id="detailAuthor" class="filter-click" data-filter="authors"></span></p>
+            <p><strong>Verlag:</strong> <span id="detailPublisher" class="filter-click" data-filter="publisher"></span></p>
+            <p><strong>Tags:</strong> <span id="detailTags"></span></p>
+            <p><strong>Serie:</strong> <span id="detailSeries" class="filter-click" data-filter="series"></span></p>
+            <p><strong>Format:</strong> <span id="detailFormats" class="filter-click" data-filter="formats"></span></p>
+            <p><strong>Sprache:</strong> <span id="detailLang" class="filter-click" data-filter="languages"></span></p>
+            <button id="loanButton">Ich möchte dieses eBook ausleihen</button>
+        </div>
+    </div>
+
+    <!-- Popup-Formular -->
+    <div id="loanFormPopup">
+        <div id="loanFormPopupClose" onclick="document.getElementById('loanFormPopup').style.display='none'">✖</div>
+        <h3>Ausleihanfrage</h3>
+        <input type="text" id="vorname" placeholder="Vorname">
+        <input type="text" id="nachname" placeholder="Nachname">
+        <input type="email" id="email" placeholder="E-Mail">
+        <textarea id="beziehung" placeholder="Woher kennen wir uns?"></textarea>
+        <button onclick="sendLoanRequest()">Senden</button>
+    </div>
+
+    <script>
+        let books = [];
+        let currentBook = null;
+        let activeFilters = {
+            authors: new Set(),
+            tags: new Set(),
+            languages: new Set(),
+            series: new Set(),
+            formats: new Set(),
+            publisher: new Set()
+        };
+
+        fetch('books.json')
+            .then(res => res.json())
+            .then(data => {
+                books = data.sort((a, b) =>
+                    (a.series || "").localeCompare(b.series || "") ||
+                    (a.author_sort || a.authors || "").localeCompare(b.author_sort || b.authors || "")
+                );
+                renderBooks(books);
+                buildFilters(books);
+                if (books.length > 0) showDetails(books[0]);
+            });
+
+        function renderBooks(data) {
+            const grid = document.getElementById("coverGrid");
+            grid.innerHTML = "";
+            data.forEach(book => {
+                const div = document.createElement("div");
+                div.className = "cover-item";
+                const img = document.createElement("img");
+                img.src = book.cover;
+                img.alt = book.title;
+                img.onclick = () => showDetails(book);
+                div.appendChild(img);
+                grid.appendChild(div);
+            });
+        }
+
+        function buildFilters(data) {
+            const fields = {
+                authors: "authorsFilter",
+                tags: "tagsFilter",
+                languages: "languagesFilter",
+                series: "seriesFilter",
+                formats: "formatsFilter",
+                publisher: "publisherFilter"
+            };
+
+            for (let key in fields) {
+                const div = document.getElementById(fields[key]);
+                const values = [...new Set(data.map(b => (b[key] || "").split(",")).flat().map(s => s.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
+                div.innerHTML = values.map(val => `
+              <label><input type="checkbox" data-cat="${key}" value="${val}"> ${val}</label><br>
+            `).join("");
+            }
+        }
+
+        document.getElementById("search").addEventListener("input", applyFilters);
+
+        document.getElementById("sidebar").addEventListener("change", e => {
+            if (e.target.matches("input[type=checkbox]")) {
+                const cat = e.target.dataset.cat;
+                if (e.target.checked) {
+                    activeFilters[cat].add(e.target.value);
+                } else {
+                    activeFilters[cat].delete(e.target.value);
+                }
+                applyFilters();
+            }
+        });
+
+        function applyFilters() {
+            const q = document.getElementById("search").value.toLowerCase();
+
+            const filtered = books.filter(b => {
+                if (q && !(b.title + b.authors + b.tags).toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").includes(q.normalize("NFD").replace(/\p{Diacritic}/gu, ""))) return false;
+
+                for (let cat in activeFilters) {
+                    if (activeFilters[cat].size > 0) {
+                        const bookVal = (b[cat] || "").split(",").map(s => s.trim());
+                        if (![...activeFilters[cat]].every(f => bookVal.includes(f))) return false;
+                    }
+                }
+                return true;
+            });
+
+            renderBooks(filtered);
+        }
+
+        function showDetails(book) {
+            currentBook = book;
+            document.getElementById("detailCover").src = book.cover;
+            document.getElementById("detailTitle").textContent = book.title;
+            document.getElementById("detailAuthor").textContent = book.authors;
+            document.getElementById("detailPublisher").textContent = book.publisher;
+            document.getElementById("detailTags").innerHTML = (book.tags || "").split(",").map(tag =>
+                `<span class="filter-click" data-filter="tags">${tag.trim()}</span>`).join(", ");
+            document.getElementById("detailSeries").textContent = book.series || "";
+            document.getElementById("detailFormats").textContent = book.formats || "";
+            document.getElementById("detailLang").textContent = book.languages || "";
+        }
+
+        document.getElementById("detailPanel").addEventListener("click", e => {
+            if (e.target.classList.contains("filter-click")) {
+                const cat = e.target.dataset.filter;
+                const val = e.target.textContent.trim();
+                activeFilters[cat].add(val);
+                const cb = [...document.querySelectorAll(`#sidebar input[data-cat="${cat}"]`)].find(c => c.value === val);
+                if (cb) cb.checked = true;
+                applyFilters();
+            }
+        });
+
+        document.querySelectorAll(".reset-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const cat = btn.dataset.filter;
+                if (cat === "search") {
+                    document.getElementById("search").value = "";
+                } else {
+                    activeFilters[cat].clear();
+                    document.querySelectorAll(`#sidebar input[data-cat="${cat}"]`).forEach(cb => cb.checked = false);
+                }
+                applyFilters();
+            });
+        });
+
+        document.getElementById("resetFilters").addEventListener("click", () => {
+            document.getElementById("search").value = "";
+            for (let cat in activeFilters) activeFilters[cat].clear();
+            document.querySelectorAll("#sidebar input[type=checkbox]").forEach(cb => cb.checked = false);
+            applyFilters();
+        });
+
+        document.getElementById("loanButton").addEventListener("click", () => {
+            document.getElementById("loanFormPopup").style.display = "block";
+        });
+
+        function sendLoanRequest() {
+            const vorname = document.getElementById("vorname").value;
+            const nachname = document.getElementById("nachname").value;
+            const email = document.getElementById("email").value;
+            const bez = document.getElementById("beziehung").value;
+
+            const subject = encodeURIComponent("eBook-Ausleihanfrage: " + currentBook.title);
+            const body = encodeURIComponent(`Ausleih-Anfrage\n\nVorname: ${vorname}\nNachname: ${nachname}\nE-Mail: ${email}\n\nBeziehung: ${bez}\n\nBuchdetails:\nTitel: ${currentBook.title}\nAutor(en): ${currentBook.authors}\nVerlag: ${currentBook.publisher}\nSerie: ${currentBook.series}\nSprache: ${currentBook.languages}\nTags: ${currentBook.tags}`);
+
+            window.location.href = `mailto:severinbooks@gmx.ch?subject=${subject}&body=${body}`;
+            document.getElementById("loanFormPopup").style.display = "none";
+        }
+    </script>
+</body>
+</html>

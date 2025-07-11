@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impressum | SeverinBooks</title>
+  <link rel="icon" href="images/icons8-book-96.png" type="image/png">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #1e1e1e;
+      color: white;
+    }
+
+    header {
+      background-color: #2b2b2b;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    header a {
+      background-color: #444;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    header a:hover {
+      background-color: #666;
+      cursor: pointer;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .section:nth-child(even) {
+      background-color: #2e2e2e;
+    }
+
+    .section:nth-child(odd) {
+      background-color: #3a3a3a;
+    }
+
+    .section img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .section .text {
+      flex: 1;
+    }
+
+    .section .image {
+      flex: 1;
+    }
+
+    .section .text h2 {
+      margin-top: 0;
+    }
+
+    .footer {
+      background-color: #2b2b2b;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .footer a {
+      color: lightblue;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media screen and (max-width: 768px) {
+      .section {
+        flex-direction: column;
+        text-align: left;
+      }
+
+      .section .image,
+      .section .text {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Impressum</h1>
+    <a href="index.html">Zurück</a>
+  </header>
+
+  <!-- Abschnitt 1: Bild links, Text rechts -->
+  <div class="section">
+    <div class="image">
+      <img src="images/erol-ahmed-n23rmtcf0na-unsplash-2135205480-e1709311233874-crop1.jpg" alt="Bücherregal Impressum1">
+    </div>
+    <div class="text">
+      <!-- <h2></h2> -->
+      <p><strong>Verantwortlich für den Inhalt dieser Webseite:</strong><br>
+      Severin Roost<br>
+      Spitalstrasse 14<br>
+      3454 Sumiswald<br>
+      Schweiz</p>
+      <p><strong>Kontakt:</strong><br>
+      E-Mail: <a href="mailto:severinbooks@gmx.ch" style="color: lightblue;">severinbooks@gmx.ch</a></p>
+    </div>
+  </div>
+
+  <!-- Abschnitt 2: Text links, Bild rechts -->
+  <div class="section">
+    <div class="text">
+      <h2>Haftungsausschluss</h2>
+      <p>Die Inhalte dieser Webseite dienen ausschliesslich der Übersicht. Es erfolgt keine öffentliche Bereitstellung von eBooks. Die gezeigten Inhalte werden gemäss Schweizer Recht im engen privaten Kreis verwendet.</p>
+      <p>Diese Webseite enthält keine kommerziellen Absichten und keine öffentlich zugänglichen eBook-Downloads.</p>
+    </div>
+    <div class="image">
+      <img src="images/erol-ahmed-n23rmtcf0na-unsplash-2135205480-e1709311233874-crop2.jpg" alt="Bücherregal Impressum2">
+    </div>
+  </div>
+
+  <!-- Footer: Icon-Credit -->
+  <div class="footer">
+    <p><a href="https://icons8.com/icon/43131/book" target="_blank">Book</a> icon by <a href="https://icons8.com" target="_blank">Icons8</a></p>
+  </div>
+
+</body>
+</html>
