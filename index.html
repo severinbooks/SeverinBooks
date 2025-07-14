@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>SeverinBooks</title>
     <link rel="icon" href="images/icons8-book-96.png" type="image/png">
+    <!-- Open Graph Meta-Tags für WhatsApp & Co -->
+  <meta property="og:title" content="SeverinBooks" />
+  <meta property="og:description" content="Entdecke über 4'000 christliche eBooks." />
+  <meta property="og:image" content="https://severinbooks.github.io/SeverinBooks/images/dlibrary-3267001_1920.jpg" />
+  <meta property="og:url" content="https://severinbooks.github.io/SeverinBooks" />
+  <meta property="og:type" content="website" />
     <style>
         /* Global Styles */
         * {
@@ -269,6 +275,43 @@
     color: #ddd;
 }
 
+.filter-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3em;
+  margin-bottom: 0.05em;
+  line-height: 1.3;
+}
+
+.filter-text {
+  flex: 1;
+  word-break: break-word;
+}
+
+#coverOverlay {
+  position: fixed; /* bleibt beim Scrollen sichtbar */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* Klicks durch Overlay durchlassen */
+  z-index: 1000; /* über allen anderen Elementen */
+  max-width: 80vw;
+  max-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#coverOverlay img {
+  max-width: 70vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 50px 11px rgba(0,0,0,0.7);
+}
+
+
     </style>
 </head>
 <body>
@@ -331,6 +374,9 @@
 
         <div id="main">
             <div class="cover-grid" id="coverGrid"></div>
+            <div id="coverOverlay" style="display:none;">
+                <img id="overlayCoverImage" src="" alt="Großes Cover">
+            </div>
         </div>
 
         <div id="detailPanel">
@@ -370,16 +416,22 @@
         };
 
         fetch('books.json')
-            .then(res => res.json())
-            .then(data => {
-                books = data.sort((a, b) =>
-                    (a.series || "").localeCompare(b.series || "") ||
-                    (a.author_sort || a.authors || "").localeCompare(b.author_sort || b.authors || "")
-                );
-                renderBooks(books);
-                buildFilters(books);
-                updateBookCount(books); // initialer Zähler
-            });
+  .then(res => res.json())
+  .then(data => {
+    // Bücher mit Tag "Übersetzt" herausfiltern
+    books = data.filter(book => {
+      const tags = (book.tags || "").split(",").map(tag => tag.trim().toLowerCase());
+      return !tags.includes("übersetzt");
+    }).sort((a, b) =>
+      (a.series || "").localeCompare(b.series || "") ||
+      (a.author_sort || a.authors || "").localeCompare(b.author_sort || b.authors || "")
+    );
+
+    renderBooks(books);
+    buildFilters(books);
+    updateBookCount(books); // initialer Zähler
+  });
+
 
         function renderBooks(data) {
             const grid = document.getElementById("coverGrid");
@@ -418,33 +470,25 @@
         const div = document.getElementById(fields[key]);
         let values = [];
 
-        if (key === "authors") {
-            // Alle Autoren aus allen Büchern extrahieren und splitten
-            // Dabei & als Trennzeichen benutzen
-            let authorsSet = new Set();
-            let authorToSortMap = new Map();
+if (key === "authors") {
+    let authorsSet = new Set();
 
-            data.forEach(book => {
-                // Autoren aus Buch extrahieren, aufsplitten, trimmen
-                let authors = (book.authors || "").split(/\s*&\s*/).map(a => a.trim());
-                authors.forEach(author => {
-                    authorsSet.add(author);
+    data.forEach(book => {
+        let authors = (book.authors || "").split(/\s*&\s*/).map(a => a.trim());
+        authors.forEach(author => authorsSet.add(author));
+    });
 
-                    // Falls dieser Autor noch keinen author_sort Wert hat, setzen wir ihn
-                    if (!authorToSortMap.has(author)) {
-                        authorToSortMap.set(author, book.author_sort || "");
-                    }
-                });
-            });
+    let authors = [...authorsSet];
 
-            values = [...authorsSet];
+    // Hilfsfunktion zum Sortieren nach Nachname (letztes Wort)
+    const sortKey = name => {
+        const parts = name.trim().split(/\s+/);
+        return (parts[parts.length - 1] || "").toLowerCase();
+    };
 
-            // Sortieren nach author_sort
-            values.sort((a, b) => {
-                let aSort = authorToSortMap.get(a) || "";
-                let bSort = authorToSortMap.get(b) || "";
-                return aSort.localeCompare(bSort, "de");
-            });
+    authors.sort((a, b) => sortKey(a).localeCompare(sortKey(b), 'de'));
+
+    values = authors;
 
         } else {
             // Standard: kommaseparierte Strings aufsplitten, trimmen, filtern, sortieren
@@ -452,8 +496,12 @@
         }
 
         div.innerHTML = values.map(val => `
-          <label><input type="checkbox" data-cat="${key}" value="${val}"> ${val}</label><br>
-        `).join("");
+  <label class="filter-label">
+    <input type="checkbox" data-cat="${key}" value="${val}">
+    <span class="filter-text">${val}</span>
+  </label>
+`).join("");
+
     }
 }
 
@@ -511,6 +559,50 @@
   .join(", ");
 
         }
+
+const detailCover = document.getElementById("detailCover");
+const coverOverlay = document.getElementById("coverOverlay");
+const overlayCoverImage = document.getElementById("overlayCoverImage");
+
+// Funktion Overlay anzeigen
+function showOverlay(src) {
+  overlayCoverImage.src = src;
+  coverOverlay.style.display = "flex";
+}
+
+// Funktion Overlay verstecken
+function hideOverlay() {
+  coverOverlay.style.display = "none";
+}
+
+// Hover für Desktop
+detailCover.addEventListener("mouseenter", () => {
+  showOverlay(detailCover.src);
+});
+detailCover.addEventListener("mouseleave", () => {
+  hideOverlay();
+});
+
+// Tap für Mobil (Toggle bei Klick/Touch)
+let overlayVisible = false;
+detailCover.addEventListener("click", () => {
+  if (overlayVisible) {
+    hideOverlay();
+    overlayVisible = false;
+  } else {
+    showOverlay(detailCover.src);
+    overlayVisible = true;
+  }
+});
+
+// Zusätzlich: Tippen irgendwo außerhalb schließt das Overlay (z.B. beim Mobilgerät)
+document.body.addEventListener("click", (e) => {
+  if (overlayVisible && !detailCover.contains(e.target) && !coverOverlay.contains(e.target)) {
+    hideOverlay();
+    overlayVisible = false;
+  }
+});
+
 
         document.getElementById("detailPanel").addEventListener("click", e => {
     if (e.target.classList.contains("filter-click")) {
