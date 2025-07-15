@@ -10,6 +10,7 @@
   <meta property="og:image" content="https://severinbooks.github.io/SeverinBooks/images/dlibrary-3267001_1920_SeverinBooks.jpg" />
   <meta property="og:url" content="https://severinbooks.github.io/SeverinBooks" />
   <meta property="og:type" content="website" />
+  <meta name="robots" content="noindex, nofollow">
     <style>
         /* Global Styles */
         * {
@@ -73,6 +74,7 @@
             height: 100vh;
             flex-shrink: 0;
             border-left: 2px solid #444;
+            content-visibility: hidden;
         }
 
         .cover-grid {
@@ -227,6 +229,7 @@
     font-size: 0.9rem;
     border-top: 1px solid #444;
     text-align: center;
+        }
 
     #sidebar {
     display: flex;
@@ -235,7 +238,6 @@
 }
 
 #sidebar .filters {
-    overflow-y: auto;
     flex-grow: 1;
     padding-bottom: 1rem;
 }
@@ -249,7 +251,7 @@
     flex-shrink: 0;
 }
 
-}
+
 #sidebarContainer {
     display: flex;
     flex-direction: column;
@@ -309,6 +311,43 @@
   height: auto;
   border-radius: 10px;
   box-shadow: 0 0 50px 11px rgba(0,0,0,0.7);
+}
+
+.cover-item {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2/3;
+  background-color: #2d2d2d; /* etwas heller als #1e1e1e */
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cover-item.loading::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  border: 4px solid #999;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.cover-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 
@@ -380,7 +419,7 @@
         </div>
 
         <div id="detailPanel">
-            <img id="detailCover" src="" alt="">
+            <img id="detailCover" src="" alt="Buchcover">
             <h2 id="detailTitle"></h2>
             <p><strong>Autor(en):</strong> <span id="detailAuthor"></span></p>
             <p><strong>Verlag:</strong> <span id="detailPublisher" class="filter-click" data-filter="publisher"></span></p>
@@ -430,23 +469,43 @@
     renderBooks(books);
     buildFilters(books);
     updateBookCount(books); // initialer Zähler
+  })
+  .catch(err => {
+    console.error("Fehler beim Laden von books.json:", err);
+    alert("Bücher konnten leider nicht geladen werden.");
   });
 
 
         function renderBooks(data) {
-            const grid = document.getElementById("coverGrid");
-            grid.innerHTML = "";
-            data.forEach(book => {
-                const div = document.createElement("div");
-                div.className = "cover-item";
-                const img = document.createElement("img");
-                img.src = book.cover;
-                img.alt = book.title;
-                img.onclick = () => showDetails(book);
-                div.appendChild(img);
-                grid.appendChild(div);
-            });
-        }
+  const grid = document.getElementById("coverGrid");
+  grid.innerHTML = "";
+
+  data.forEach(book => {
+    const div = document.createElement("div");
+    div.className = "cover-item loading"; // Start als "loading"
+
+    const img = document.createElement("img");
+    img.alt = book.title;
+    img.loading = "eager"; // sofort laden
+
+    img.addEventListener("load", () => {
+  div.classList.remove("loading");
+});
+
+img.addEventListener("error", () => {
+  div.classList.remove("loading");
+  img.src = "images/fallback-image.jpg"; // Fallback-Bild bei Fehler
+});
+
+img.src = book.cover;
+
+    img.onclick = () => showDetails(book);
+
+    div.appendChild(img);
+    grid.appendChild(div);
+  });
+}
+
 
         function updateBookCount(filtered) {
     const total = books.length;
@@ -540,6 +599,7 @@ if (key === "authors") {
         }
 
         function showDetails(book) {
+            document.getElementById("detailPanel").style.contentVisibility = "visible";
             currentBook = book;
             document.getElementById("detailCover").src = book.cover;
             document.getElementById("detailTitle").textContent = book.title;
