@@ -599,26 +599,48 @@ if (key === "authors") {
         }
 
         function showDetails(book) {
-            document.getElementById("detailPanel").style.contentVisibility = "visible";
-            currentBook = book;
-            document.getElementById("detailCover").src = book.cover;
-            document.getElementById("detailTitle").textContent = book.title;
-            document.getElementById("detailAuthor").innerHTML = (book.authors || "")
-  .split(/\s*&\s*/)
-  .map(author => `<span class="filter-click" data-filter="authors">${author.trim()}</span>`)
-  .join(", ");
+    currentBook = book;
 
-            document.getElementById("detailPublisher").textContent = book.publisher;
-            document.getElementById("detailTags").innerHTML = (book.tags || "").split(",").map(tag =>
-                `<span class="filter-click" data-filter="tags">${tag.trim()}</span>`).join(", ");
-            document.getElementById("detailSeries").textContent = book.series || "";
-            document.getElementById("detailFormats").textContent = book.formats || "";
-            document.getElementById("detailLang").innerHTML = (book.languages || "")
-  .split(",")
-  .map(lang => `<span class="filter-click" data-filter="languages">${lang.trim()}</span>`)
-  .join(", ");
+    const detailCover = document.getElementById("detailCover");
 
+    // Temporär ausblenden, um "falsches" Bild zu verhindern
+    detailCover.style.visibility = "hidden";
+
+    // Sicherheitskopie des Pfads
+    const expectedCoverSrc = book.cover;
+
+    detailCover.onload = () => {
+        // Nur anzeigen, wenn das Bild zum aktuell ausgewählten Buch gehört
+        if (currentBook.cover === expectedCoverSrc) {
+            detailCover.style.visibility = "visible";
         }
+    };
+
+    detailCover.onerror = () => {
+        detailCover.src = "images/fallback-image.jpg";
+        detailCover.style.visibility = "visible";
+    };
+
+    detailCover.src = book.cover;
+
+    // Jetzt die Metadaten befüllen
+    document.getElementById("detailPanel").style.contentVisibility = "visible";
+    document.getElementById("detailTitle").textContent = book.title;
+    document.getElementById("detailAuthor").innerHTML = (book.authors || "")
+        .split(/\s*&\s*/)
+        .map(author => `<span class="filter-click" data-filter="authors">${author.trim()}</span>`)
+        .join(", ");
+    document.getElementById("detailPublisher").textContent = book.publisher;
+    document.getElementById("detailTags").innerHTML = (book.tags || "").split(",").map(tag =>
+        `<span class="filter-click" data-filter="tags">${tag.trim()}</span>`).join(", ");
+    document.getElementById("detailSeries").textContent = book.series || "";
+    document.getElementById("detailFormats").textContent = book.formats || "";
+    document.getElementById("detailLang").innerHTML = (book.languages || "")
+        .split(",")
+        .map(lang => `<span class="filter-click" data-filter="languages">${lang.trim()}</span>`)
+        .join(", ");
+}
+
 
 const detailCover = document.getElementById("detailCover");
 const coverOverlay = document.getElementById("coverOverlay");
