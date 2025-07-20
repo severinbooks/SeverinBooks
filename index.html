@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>SeverinBooks</title>
     <link rel="icon" href="images/icons8-book-96.png" type="image/png">
+    <script defer data-domain="severinbooks.github.io/severinbooks" src="https://plausible.io/js/script.js"></script>
     <!-- Open Graph Meta-Tags für WhatsApp & Co -->
   <meta property="og:title" content="SeverinBooks" />
   <meta property="og:description" content="Entdecke über 4'000 christliche eBooks." />
@@ -169,10 +170,11 @@
             background: #222;
             padding: 1rem;
             border: 2px solid #888;
-            border-radius: 6px;
+            border-radius: 10px;
             display: none;
             z-index: 1000;
-            width: 300px;
+            width: 350px;
+            box-shadow: 0 0 50px 5px rgba(0, 0, 0, 0.7);
         }
 
             #loanFormPopup input, #loanFormPopup textarea {
@@ -194,6 +196,7 @@
                 color: white;
                 border-radius: 4px;
                 cursor: pointer;
+                font-size: medium;
             }
 
                 #loanFormPopup button:hover {
@@ -206,6 +209,10 @@
             font-size: 1.2rem;
             color: #aaa;
         }
+
+            #loanFormPopupClose:hover {
+                color: #777777;
+            }
 
         #loanButton {
             margin-top: 1rem;
@@ -439,11 +446,24 @@
         <input type="text" id="nachname" placeholder="Nachname">
         <input type="email" id="email" placeholder="E-Mail">
         <textarea id="beziehung" placeholder="Woher kennen wir uns?"></textarea>
+        <label style="display: flex; align-items: center;">
+          <input type="checkbox" id="rememberMe" style="margin-left: 0.1rem; margin-right: 0.5rem; width: 16px; height: 16px;">
+          Meine Eingaben merken
+        </label>
+
         <button onclick="sendLoanRequest()">Senden</button>
     </div>
 
     <script>
         let books = [];
+        function debounce(fn, delay) {
+            let timer;
+            return function (...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
         let currentBook = null;
         let activeFilters = {
             authors: new Set(),
@@ -565,7 +585,9 @@ if (key === "authors") {
 }
 
 
-        document.getElementById("search").addEventListener("input", applyFilters);
+        const debouncedFilter = debounce(applyFilters, 300);
+        document.getElementById("search").addEventListener("input", debouncedFilter);
+
 
         document.getElementById("sidebar").addEventListener("change", e => {
             if (e.target.matches("input[type=checkbox]")) {
@@ -729,6 +751,26 @@ document.body.addEventListener("click", (e) => {
 
         document.getElementById("loanButton").addEventListener("click", () => {
             document.getElementById("loanFormPopup").style.display = "block";
+
+        const saved = localStorage.getItem("loanFormData");
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                document.getElementById("vorname").value = data.vorname || "";
+                document.getElementById("nachname").value = data.nachname || "";
+                document.getElementById("email").value = data.email || "";
+                document.getElementById("beziehung").value = data.bez || "";
+                document.getElementById("rememberMe").checked = true;
+            } catch (e) {
+                console.warn("Fehler beim Laden gespeicherter Daten:", e);
+            }
+        } else {
+            document.getElementById("vorname").value = "";
+            document.getElementById("nachname").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("beziehung").value = "";
+            document.getElementById("rememberMe").checked = false;
+        }
         });
 
         function sendLoanRequest() {
@@ -736,6 +778,19 @@ document.body.addEventListener("click", (e) => {
             const nachname = document.getElementById("nachname").value;
             const email = document.getElementById("email").value;
             const bez = document.getElementById("beziehung").value;
+            const remember = document.getElementById("rememberMe").checked;
+
+            // Nur speichern, wenn Checkbox gesetzt ist
+           if (remember) {
+                localStorage.setItem("loanFormData", JSON.stringify({
+                    vorname,
+                    nachname,
+                    email,
+                    bez
+                }));
+            } else {
+                localStorage.removeItem("loanFormData");
+            }  
 
             const subject = encodeURIComponent("eBook-Ausleihanfrage: " + currentBook.title);
             const body = encodeURIComponent(`Ausleih-Anfrage\n\nVorname: ${vorname}\nNachname: ${nachname}\nE-Mail: ${email}\n\nBeziehung: ${bez}\n\nBuchdetails:\nTitel: ${currentBook.title}\nAutor(en): ${currentBook.authors}\nVerlag: ${currentBook.publisher}\nSerie: ${currentBook.series}\nSprache: ${currentBook.languages}\nTags: ${currentBook.tags}`);
