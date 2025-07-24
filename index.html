@@ -100,7 +100,25 @@
             max-height: 250px;
             object-fit: contain;
             border-radius: 4px;
-            margin-bottom: 1rem;
+        }
+
+        #detailTitle {
+            margin-top: 0.3em;
+            margin-bottom: 0.3em;
+            font-size: 1.2em;
+        }
+
+        #detailPanel p {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.22em;
+        }
+
+        p#pBookDescription {
+            display: block;
+            margin-top: 1em;
         }
 
         h4 {
@@ -427,13 +445,14 @@
         <div id="detailPanel">
             <img id="detailCover" src="" alt="Buchcover">
             <h2 id="detailTitle"></h2>
-            <p><strong>Autor(en):</strong> <span id="detailAuthor"></span></p>
-            <p><strong>Verlag:</strong> <span id="detailPublisher" class="filter-click" data-filter="publisher"></span></p>
-            <p><strong>Tags:</strong> <span id="detailTags"></span></p>
-            <p><strong>Serie:</strong> <span id="detailSeries" class="filter-click" data-filter="series"></span></p>
-            <p><strong>Format:</strong> <span id="detailFormats" class="filter-click" data-filter="formats"></span></p>
-            <p><strong>Sprache:</strong> <span id="detailLang"></span></p>
+            <p><strong>Autor:</strong> <span id="detailAuthor" style="overflow-wrap: break-word;"></span></p>
+            <p><strong>Verlag:</strong> <span id="detailPublisher" class="filter-click" data-filter="publisher" style="overflow-wrap: break-word;"></span></p>
+            <p><strong>Tags:</strong> <span id="detailTags" style="overflow-wrap: break-word;"></span></p>
+            <p><strong>Serie:</strong> <span id="detailSeries" class="filter-click" data-filter="series" style="overflow-wrap: break-word;"></span></p>
+            <p><strong>Format:</strong> <span id="detailFormats" class="filter-click" data-filter="formats" style="overflow-wrap: break-word;"></span></p>
+            <p><strong>Sprache:</strong> <span id="detailLang" style="overflow-wrap: break-word;"></span></p>
             <button id="loanButton">Ich möchte dieses eBook ausleihen</button>
+            <p id="pBookDescription"><strong>Kurzbeschreibung:</strong><br><span id="bookDescription" style="font-size: 0.95rem; overflow-wrap: break-word;"><em>Kurzbeschreibung wird geladen…</em></span></p>
         </div>
     </div>
 
@@ -619,9 +638,11 @@ if (key === "authors") {
             updateBookCount(filtered);
         }
 
-        function showDetails(book) {
-    currentBook = book;
 
+// Deinen Google Books API-Key hier einfügen
+const GOOGLE_API_KEY = "AIzaSyCQDlo3eFRPPoFe0ckrXqQ4wyhYjJssBy4";
+
+function loadCoverImage(book) {
     const detailCover = document.getElementById("detailCover");
 
     // Temporär ausblenden, um "falsches" Bild zu verhindern
@@ -643,8 +664,125 @@ if (key === "authors") {
     };
 
     detailCover.src = book.cover;
+}
 
-    // Jetzt die Metadaten befüllen
+// Platzhalterprüfung – robust
+function isGooglePlaceholder(text) {
+  const trimmed = text.trim();
+  const pattern = /^Keine ausführliche Beschreibung für ["'].*["'] verfügbar\.?$/i;
+  return pattern.test(trimmed) && trimmed.length < 100;
+}
+
+function fuzzyMatch(a, b) {
+  const clean = str => str.toLowerCase().replace(/[^\wäöüß]+/gi, " ").trim().split(/\s+/);
+  const aWords = clean(a);
+  const bWords = clean(b);
+  const overlap = aWords.filter(word => bWords.includes(word));
+  return overlap.length / Math.max(aWords.length, bWords.length);
+}
+
+
+async function fetchAndTranslateDescription(book, descEl) {
+      const fullTitle = book.title;
+      const cleanedAuthor = (book.authors || "").replace(/&/g, "and").trim();
+      const parts = fullTitle.split(":");
+      const mainTitle = parts[0].trim();
+
+      descEl.innerHTML = "<em>Beschreibung wird geladen…</em>";
+
+async function searchGoogleBooks(title, author) {
+  const q = `intitle:"${title}" inauthor:"${author}"`;
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&key=${GOOGLE_API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP Fehler ${res.status}`);
+  const data = await res.json();
+
+  if (!data.items || data.items.length === 0) {
+    return { found: false, description: null };
+  }
+
+  const normalizedInputTitle = title.toLowerCase().trim();
+  const inputAuthor = author.toLowerCase().trim();
+
+  let bestMatch = null;
+  let bestScore = 0;
+
+  for (const item of data.items) {
+    const info = item.volumeInfo;
+    if (!info.description || !info.title) continue;
+
+    // Prüfe, ob die Beschreibung ein Google-Platzhalter ist
+    if (isGooglePlaceholder(info.description)) continue;
+
+    const apiTitle = (info.title || "").toLowerCase().trim();
+    const apiAuthors = (info.authors || []).map(a => a.toLowerCase().trim());
+
+    const titleScore = fuzzyMatch(normalizedInputTitle, apiTitle);
+    const authorScore = apiAuthors.some(a => inputAuthor.includes(a) || a.includes(inputAuthor)) ? 1 : 0;
+
+    const totalScore = titleScore * 0.6 + authorScore * 0.4;
+
+    if (totalScore > bestScore) {
+      bestScore = totalScore;
+      bestMatch = info;
+    }
+  }
+
+  // Wenigstens minimale Übereinstimmung muss da sein
+  if (bestMatch && bestScore > 0.5) {
+    return { found: true, description: bestMatch.description };
+  }
+
+  return { found: true, description: null };
+}
+
+
+
+      async function translateToGerman(text) {
+        const res = await fetch(`https://lingva.ml/api/v1/en/de/${encodeURIComponent(text)}`);
+        if (!res.ok) throw new Error(`Lingva API-Fehler ${res.status}`);
+        const data = await res.json();
+        return data.translation;
+      }
+
+      try {
+        let result = await searchGoogleBooks(fullTitle, cleanedAuthor);
+        if (!result.found) result = await searchGoogleBooks(mainTitle, cleanedAuthor);
+
+        if (!result.found) {
+          descEl.innerHTML = "<em>Keine Beschreibung gefunden.</em>";
+        } else if (!result.description) {
+          descEl.innerHTML = "<em>Keine Beschreibung vorhanden.</em>";
+        } else if (!result.description || isGooglePlaceholder(result.description)) {
+          descEl.innerHTML = "<em>Keine Beschreibung vorhanden.</em>";
+        } else {
+    // Prüfe hier, ob Übersetzung notwendig ist
+        if ((book.languages || "").toLowerCase().includes("deutsch")) {
+        descEl.textContent = result.description.trim(); // Beschreibung direkt anzeigen
+        } else {
+          descEl.innerHTML = "<em>Beschreibung wird übersetzt…</em>";
+          try {
+            const translated = await translateToGerman(result.description.trim());
+            descEl.textContent = translated;
+          } catch (e) {
+            console.warn("⚠️ Fehler bei der Übersetzung:", e);
+            descEl.textContent = result.description.trim();
+          }
+        }
+    }
+      } catch (e) {
+        console.warn("⚠️ Fehler beim Laden der Beschreibung:", e);
+        descEl.innerHTML = "<em>Keine Beschreibung gefunden.</em>";
+      }
+    }
+
+        function showDetails(book) {
+    currentBook = book;
+
+// Bild
+    loadCoverImage(book);
+
+// Jetzt die Metadaten befüllen
     document.getElementById("detailPanel").style.contentVisibility = "visible";
     document.getElementById("detailTitle").textContent = book.title;
     document.getElementById("detailAuthor").innerHTML = (book.authors || "")
@@ -660,6 +798,11 @@ if (key === "authors") {
         .split(",")
         .map(lang => `<span class="filter-click" data-filter="languages">${lang.trim()}</span>`)
         .join(", ");
+        
+// Beschreibung + Übersetzung
+    const descEl = document.getElementById("bookDescription");
+    fetchAndTranslateDescription(book, descEl);
+
 }
 
 
@@ -707,12 +850,19 @@ document.body.addEventListener("click", (e) => {
 });
 
 
+
+
+
+
+
+
         document.getElementById("detailPanel").addEventListener("click", e => {
     if (e.target.classList.contains("filter-click")) {
         const cat = e.target.dataset.filter;
         const val = e.target.textContent.trim();
 
         // Alle Filter zurücksetzen
+        document.getElementById("search").value = ""; // 🔄 Sucheingabe leeren
         for (let key in activeFilters) {
             activeFilters[key].clear();
             document.querySelectorAll(`#sidebar input[data-cat="${key}"]`).forEach(cb => cb.checked = false);
