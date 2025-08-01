@@ -501,6 +501,7 @@
       return !tags.includes("übersetzt");
     }).sort((a, b) =>
       (a.series || "").localeCompare(b.series || "") ||
+      ((a.series_index || 0) - (b.series_index || 0)) || //Auch nach Serie-Index sortieren
       (a.author_sort || a.authors || "").localeCompare(b.author_sort || b.authors || "")
     );
 
