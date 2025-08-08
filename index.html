@@ -1050,8 +1050,6 @@ document.body.addEventListener("click", (e) => {
             document.getElementById("gebet").value = "";
             document.getElementById("rememberMe").checked = false;
         }
-        // Fehlermeldungen zurücksetzen
-        clearValidationErrors();
         });
 
     function validateForm() {
@@ -1111,45 +1109,6 @@ document.body.addEventListener("click", (e) => {
             window.location.href = `mailto:severinbooks@gmx.ch?subject=${subject}&body=${body}`;
             document.getElementById("loanFormPopup").style.display = "none";
         }
-
-// Echtzeit-Validierung beim Tippen
-document.addEventListener("DOMContentLoaded", function() {
-    const fields = ["vorname", "nachname", "email", "beziehung"];
-    
-    fields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field) {
-            field.addEventListener("blur", function() {
-                // Einzelfeld validieren beim Verlassen des Feldes
-                if (this.hasAttribute("required") && !this.value.trim()) {
-                    showError(fieldId, `Bitte fülle alle <span class="star">*</span> Pflichtfelder aus`);
-                } else {
-                    // Spezielle E-Mail-Validierung
-                    if (fieldId === "email" && this.value.trim()) {
-                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        if (!emailRegex.test(this.value)) {
-                            showError(fieldId, "Bitte geben Sie eine gültige E-Mail-Adresse ein.");
-                        } else {
-                            clearFieldError(fieldId);
-                        }
-                    } else {
-                        clearFieldError(fieldId);
-                    }
-                }
-            });
-        }
-    });
-});
-
-function clearFieldError(fieldId) {
-    const field = document.getElementById(fieldId);
-    const errorElement = document.getElementById(fieldId + "-error");
-    
-    field.classList.remove("invalid");
-    if (errorElement) {
-        errorElement.classList.remove("visible");
-    }
-}
 
     </script>
 </body>
