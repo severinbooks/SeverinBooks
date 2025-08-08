@@ -190,13 +190,13 @@
             border-radius: 10px;
             display: none;
             z-index: 1000;
-            width: 350px;
+            width: 400px;
             box-shadow: 0 0 50px 5px rgba(0, 0, 0, 0.7);
         }
 
             #loanFormPopup input, #loanFormPopup textarea {
                 width: 100%;
-                margin: 0.3rem 0;
+                margin: 0.4rem 0;
                 padding: 0.4rem;
                 border-radius: 4px;
                 border: 1px solid #666;
@@ -204,8 +204,13 @@
                 color: white;
             }
 
+            textarea#gebet {
+                height: 64px;
+            }
+
             #loanFormPopup button {
                 margin-top: 0.5rem;
+                margin-bottom: 0.2rem;
                 width: 100%;
                 padding: 0.5rem;
                 background: #1ea1f2;
@@ -375,6 +380,112 @@
 }
 
 
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+    margin-bottom: 3px;
+    margin-left: 1px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: opacity 0.5s ease, max-height 0.5s ease;
+}
+
+/* Klasse für sichtbare Fehlermeldung */
+.error-message.visible {
+    max-height: 100px; /* groß genug für 1-2 Zeilen Text */
+    opacity: 1;
+}
+
+.error-message .star {
+    color: #0075ff;
+    font-weight: bolder;
+    font-size: 17px;
+    line-height: 1;
+    vertical-align: bottom;
+}
+
+.form-field {
+    position: relative;
+}
+
+        /* Fake Platzhalter für Input-Felder */
+        .form-field .fake-placeholder {
+            position: absolute;
+            left: 7.5px;
+            top: 13.8px;
+            color: #a1a1a1;
+            font-size: 13.3px;
+            transition: all 0.2s ease;
+            z-index: 1;
+        }
+
+        .form-field .fake-placeholder .star {
+            color: #0075ff;
+            font-weight: bolder;
+            font-size: 17px;
+            line-height: 1;
+            vertical-align: bottom;
+        }
+
+
+
+
+
+/* Fake Placeholder (als <label>) */
+.form-field .fake-placeholder {
+  pointer-events: auto; /* erlaubt Klick auf das Label (fokussiert das Input) */
+  user-select: none;
+}
+
+/* Wenn Input fokussiert ist — Placeholder ausblenden */
+.form-field input:focus + .fake-placeholder,
+.form-field textarea:focus + .fake-placeholder {
+  opacity: 0;
+}
+
+/* Wenn Input einen Wert hat (auch durch Autofill) — Placeholder ausblenden */
+/* :not(:placeholder-shown) funktioniert nur, wenn das input eine placeholder-Attribute hat */
+.form-field input:not(:placeholder-shown) + .fake-placeholder,
+.form-field textarea:not(:placeholder-shown) + .fake-placeholder {
+  opacity: 0;
+}
+
+/* Vendor-spezifisch für Autofill (Chrome/Safari & Firefox) */
+.form-field input:-webkit-autofill + .fake-placeholder,
+.form-field textarea:-webkit-autofill + .fake-placeholder {
+  opacity: 0;
+}
+
+.form-field input:-moz-autofill + .fake-placeholder,
+.form-field textarea:-moz-autofill + .fake-placeholder {
+  opacity: 0;
+}
+
+/* Falls du den echten placeholder ohnehin unsichtbar machst: */
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+    color: transparent;
+}
+
+/* Autofill-Farben überschreiben für Chrome, Edge, Safari */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #333 inset !important;
+  -webkit-text-fill-color: white !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* Autofill-Farben überschreiben für Firefox */
+input:-moz-autofill {
+  box-shadow: 0 0 0 1000px #333 inset !important;
+  -moz-text-fill-color: white !important;
+}
+
+
     </style>
 </head>
 <body>
@@ -460,15 +571,31 @@
     <div id="loanFormPopup">
         <div id="loanFormPopupClose" onclick="document.getElementById('loanFormPopup').style.display='none'">✖</div>
         <h3>Ausleihanfrage</h3>
-        <input type="text" id="vorname" placeholder="Vorname">
-        <input type="text" id="nachname" placeholder="Nachname">
-        <input type="email" id="email" placeholder="E-Mail">
-        <textarea id="beziehung" placeholder="Woher kennen wir uns?"></textarea>
+        <div class="form-field">
+            <input id="vorname" name="vorname" type="text" placeholder="Vorname" autocomplete="given-name" required>
+            <label class="fake-placeholder" for="vorname">Vorname <span class="star">*</span></label>
+        </div>
+        <div class="form-field">
+            <input id="nachname" name="nachname" type="text" placeholder="Nachname" autocomplete="given-name" required>
+            <label class="fake-placeholder" for="nachname">Nachname <span class="star">*</span></label>
+        </div>
+        <div class="form-field">
+            <input id="email" name="email" type="email" placeholder="E-Mail" autocomplete="given-name" required>
+            <label class="fake-placeholder" for="email">E-Mail <span class="star">*</span></label>
+        </div>
+        <div class="form-field">
+            <textarea id="beziehung" name="beziehung" placeholder="Woher kennen wir uns?" autocomplete="given-name" required></textarea>
+            <label class="fake-placeholder" for="beziehung">Woher kennen wir uns? <span class="star">*</span></label>
+        </div>
+        <div class="form-field">
+            <textarea id="gebet" name="gebet" placeholder="Wofür darf ich für dich beten?" autocomplete="given-name"></textarea>
+            <label class="fake-placeholder" for="gebet">Wofür darf ich für dich beten?</label>
+        </div>
         <label style="display: flex; align-items: center;">
           <input type="checkbox" id="rememberMe" style="margin-left: 0.1rem; margin-right: 0.5rem; width: 16px; height: 16px;">
           Meine Eingaben merken
         </label>
-
+        <div class="error-message" id="form-error"></div>
         <button onclick="sendLoanRequest()">Senden</button>
     </div>
 
@@ -910,6 +1037,7 @@ document.body.addEventListener("click", (e) => {
                 document.getElementById("nachname").value = data.nachname || "";
                 document.getElementById("email").value = data.email || "";
                 document.getElementById("beziehung").value = data.bez || "";
+                document.getElementById("gebet").value = "";
                 document.getElementById("rememberMe").checked = true;
             } catch (e) {
                 console.warn("Fehler beim Laden gespeicherter Daten:", e);
@@ -919,15 +1047,50 @@ document.body.addEventListener("click", (e) => {
             document.getElementById("nachname").value = "";
             document.getElementById("email").value = "";
             document.getElementById("beziehung").value = "";
+            document.getElementById("gebet").value = "";
             document.getElementById("rememberMe").checked = false;
         }
+        // Fehlermeldungen zurücksetzen
+        clearValidationErrors();
         });
 
+    function validateForm() {
+    const errorBox = document.getElementById("form-error");
+    errorBox.classList.remove("visible");
+    errorBox.textContent = "";
+
+    const vorname = document.getElementById("vorname").value.trim();
+    const nachname = document.getElementById("nachname").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const beziehung = document.getElementById("beziehung").value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!vorname || !nachname || !email || !beziehung) {
+        errorBox.innerHTML = `Bitte fülle alle <span class="star">*</span> Pflichtfelder aus.`;
+        errorBox.classList.add("visible");
+        return false;
+    }
+
+    if (!emailRegex.test(email)) {
+        errorBox.textContent = "Bitte gib eine gültige Emailadresse an.";
+        errorBox.classList.add("visible");
+        return false;
+    }
+
+    return true;
+}
+
+
         function sendLoanRequest() {
+            // Formular validieren
+            if (!validateForm()) {
+                return; // Nicht senden, wenn Validierung fehlschlägt
+            }
             const vorname = document.getElementById("vorname").value;
             const nachname = document.getElementById("nachname").value;
             const email = document.getElementById("email").value;
             const bez = document.getElementById("beziehung").value;
+            const geb = document.getElementById("gebet").value;
             const remember = document.getElementById("rememberMe").checked;
 
             // Nur speichern, wenn Checkbox gesetzt ist
@@ -943,11 +1106,51 @@ document.body.addEventListener("click", (e) => {
             }  
 
             const subject = encodeURIComponent("eBook-Ausleihanfrage: " + currentBook.title);
-            const body = encodeURIComponent(`Ausleih-Anfrage\n\nVorname: ${vorname}\nNachname: ${nachname}\nE-Mail: ${email}\n\nBeziehung: ${bez}\n\nBuchdetails:\nTitel: ${currentBook.title}\nAutor(en): ${currentBook.authors}\nVerlag: ${currentBook.publisher}\nSerie: ${currentBook.series}\nSprache: ${currentBook.languages}\nTags: ${currentBook.tags}`);
+            const body = encodeURIComponent(`Ausleih-Anfrage\n\nVorname: ${vorname}\nNachname: ${nachname}\nE-Mail: ${email}\n\nBeziehung: ${bez}\n\nGebetsanliegen: ${geb}\n\nBuchdetails:\nTitel: ${currentBook.title}\nAutor(en): ${currentBook.authors}\nVerlag: ${currentBook.publisher}\nSerie: ${currentBook.series}\nSprache: ${currentBook.languages}\nTags: ${currentBook.tags}`);
 
             window.location.href = `mailto:severinbooks@gmx.ch?subject=${subject}&body=${body}`;
             document.getElementById("loanFormPopup").style.display = "none";
         }
+
+// Echtzeit-Validierung beim Tippen
+document.addEventListener("DOMContentLoaded", function() {
+    const fields = ["vorname", "nachname", "email", "beziehung"];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener("blur", function() {
+                // Einzelfeld validieren beim Verlassen des Feldes
+                if (this.hasAttribute("required") && !this.value.trim()) {
+                    showError(fieldId, `Bitte fülle alle <span class="star">*</span> Pflichtfelder aus`);
+                } else {
+                    // Spezielle E-Mail-Validierung
+                    if (fieldId === "email" && this.value.trim()) {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(this.value)) {
+                            showError(fieldId, "Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+                        } else {
+                            clearFieldError(fieldId);
+                        }
+                    } else {
+                        clearFieldError(fieldId);
+                    }
+                }
+            });
+        }
+    });
+});
+
+function clearFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(fieldId + "-error");
+    
+    field.classList.remove("invalid");
+    if (errorElement) {
+        errorElement.classList.remove("visible");
+    }
+}
+
     </script>
 </body>
 </html>
